@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 # Import the core function from your logic file
 from tourism_system4 import run_tourism_system 
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='.')
 
 # Route for the homepage (serving the HTML form)
 @app.route('/')
@@ -31,4 +31,5 @@ def query_system():
 
 if __name__ == '__main__':
     # Flask will run on http://127.0.0.1:5000/
+
     app.run(debug=True)
