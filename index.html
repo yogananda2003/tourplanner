@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Agents | Planner</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #818cf8;
+            --accent: #06b6d4;
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2021&q=80') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dark overlay to make text readable */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(51, 65, 85, 0.4) 100%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #1e293b;
+            text-align: center;
+            margin-top: 0;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+        }
+
+        h1 span {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 40px;
+        }
+
+        /* Input Section */
+        .input-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 18px 25px;
+            padding-right: 140px; /* Space for button */
+            border: 2px solid transparent;
+            border-radius: 16px;
+            font-size: 16px;
+            background: #f8fafc;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        button {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            bottom: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0 30px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* Agent Status / Loading Animation */
+        #agent-status {
+            display: none; /* Hidden by default */
+            margin: 20px 0;
+            padding: 15px;
+            background: #eff6ff;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            color: #1e40af;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid currentColor;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Output Section */
+        #output-container {
+            display: none; /* Hidden until response */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        #output-container.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #334155;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        #output {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            color: #334155;
+            line-height: 1.7;
+            font-size: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Markdown Styling within Output */
+        #output h2, #output h3 { color: var(--primary); margin-top: 20px; }
+        #output ul { padding-left: 20px; }
+        #output li { margin-bottom: 8px; }
+        #output strong { color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🌎 Multi-Agent <span>Tourism Planner</span></h1>
+        <p class="subtitle">Powered by AI Agents. Ask about itineraries, hidden gems, or travel logistics.</p>
+        
+        <div class="input-group">
+            <input type="text" id="queryInput" placeholder="e.g. Plan a 3-day trip to Kyoto with a focus on food..." onkeypress="if(event.keyCode == 13) document.getElementById('submitButton').click()">
+            <button id="submitButton" onclick="sendQuery()">
+                <i class="fas fa-paper-plane"></i> Plan Trip
+            </button>
+        </div>
+
+        <div id="agent-status">
+            <div style="display:flex; align-items:center;">
+                <span class="loader"></span> 
+                <span id="status-text">Initializing system...</span>
+            </div>
+        </div>
+
+        <div id="output-container">
+            <div class="output-header">
+                <i class="fas fa-robot" style="color: var(--primary);"></i>
+                <span>Agent Response</span>
+            </div>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        let statusInterval;
+        const agentMessages = [
+            "Location Agent: Identifying geographical coordinates...",
+            "History Agent: Scanning for historical significance...",
+            "Weather Agent: Checking seasonal forecasts...",
+            "Logistics Agent: Calculating optimal routes...",
+            "Culinary Agent: Searching for top-rated restaurants...",
+            "Finalizing your personalized itinerary..."
+        ];
+
+        function sendQuery() {
+            const query = document.getElementById('queryInput').value;
+            const outputContainer = document.getElementById('output-container');
+            const outputDiv = document.getElementById('output');
+            const statusDiv = document.getElementById('agent-status');
+            const statusText = document.getElementById('status-text');
+            const btn = document.getElementById('submitButton');
+
+            if (!query.trim()) {
+                alert("Please enter a travel destination or question.");
+                return;
+            }
+
+            // Reset UI
+            outputContainer.classList.remove('visible');
+            statusDiv.style.display = 'block';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> Processing';
+            
+            // Start Fake Agent Status Loop (Adds "Tech" feel)
+            let step = 0;
+            statusText.innerText = "Orchestrator: Analyzing request...";
+            statusInterval = setInterval(() => {
+                if (step < agentMessages.length) {
+                    statusText.innerText = agentMessages[step];
+                    step++;
+                }
+            }, 1500); // Update status every 1.5 seconds
+
+            // API Call
+            fetch('/api/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Render Markdown using marked.js
+                outputDiv.innerHTML = marked.parse(data.message);
+                
+                // Show Output
+                clearInterval(statusInterval);
+                statusDiv.style.display = 'none';
+                outputContainer.classList.add('visible');
+            })
+            .catch((error) => {
+                console.error('Fetch Error:', error);
+                clearInterval(statusInterval);
+                statusDiv.style.display = 'block';
+                statusText.innerText = "Error: Failed to connect to the agent network.";
+                statusText.style.color = "red";
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Plan Trip';
+            });
+        }
+    </script>
+</body>
+</html>
