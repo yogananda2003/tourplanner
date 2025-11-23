@@ -3,7 +3,7 @@ from flask_cors import CORS  # <--- NEW IMPORT
 # Import the core function from your logic file
 from tourism_system4 import run_tourism_system 
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='.')
 CORS(app) # <--- ENABLE CORS: This allows external connection to your API
 
 # Route for the homepage (serving the HTML form)
@@ -37,3 +37,4 @@ def query_system():
 if __name__ == '__main__':
     # Flask will run on http://127.0.0.1:5000/
     app.run(debug=True)
+
