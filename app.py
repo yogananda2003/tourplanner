@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS  # <--- NEW IMPORT
 # Import the core function from your logic file
 from tourism_system4 import run_tourism_system 
 
-app = Flask(__name__,template_folder='.')
+app = Flask(__name__)
+CORS(app) # <--- ENABLE CORS: This allows external connection to your API
 
 # Route for the homepage (serving the HTML form)
 @app.route('/')
@@ -24,12 +26,14 @@ def query_system():
 
     # 2. Call the core logic function
     # Note: run_tourism_system returns a dictionary with 'message' and 'status'
-    result = run_tourism_system(user_query)
-    
-    # 3. Return the result as a JSON response to the frontend
-    return jsonify(result)
+    try:
+        result = run_tourism_system(user_query)
+        # 3. Return the result as a JSON response to the frontend
+        return jsonify(result)
+    except Exception as e:
+        print(f"Server Error: {e}")
+        return jsonify({'message': 'An internal server error occurred.', 'status': 'Error'}), 500
 
 if __name__ == '__main__':
     # Flask will run on http://127.0.0.1:5000/
-
     app.run(debug=True)
